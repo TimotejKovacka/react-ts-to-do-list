@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import './App.css'
-import { Box, Container, Menu } from '@mui/material'
+import { useState, useRef } from "react";
+import "./App.css";
+import { Box, Container, Menu } from "@mui/material";
 // import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import Category from './components/Category';
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import Category from "./components/Category";
 
 function App() {
   const [moreAnchorEl, setMoreAnchorEl] = useState<null | HTMLElement>(null);
@@ -16,15 +16,18 @@ function App() {
 
   const handleMoreClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setMoreAnchorEl(e.currentTarget);
-  }
+  };
 
   const handleMoreClose = () => {
     setMoreAnchorEl(null);
-  }
+  };
 
   return (
-    <Container maxWidth='sm'>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 0 }}>
+    <Container
+      maxWidth='sm'
+      sx={{ border: "1px solid #505050", position: "relative" }}
+    >
+      <Box sx={{ display: "flex", justifyContent: "space-between", p: 0 }}>
         <Tooltip title='Back' arrow placement='right'>
           <IconButton color='primary'>
             <ChevronLeftIcon fontSize='large' />
@@ -41,14 +44,22 @@ function App() {
           <MenuItem onClick={handleMoreClose}>Logout</MenuItem>
         </Menu>
       </Box>
-      <Box sx={{ padding: '2rem 0' }}>
+      <Box
+        sx={{
+          padding: "2rem 0",
+          gap: 3,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <Typography variant='h4' component='h4'>
           😎 Personal
         </Typography>
         <Category title='Skincare' />
+        <Category title='Housework' />
       </Box>
-    </Container >
+    </Container>
   );
 }
 
-export default App
+export default App;

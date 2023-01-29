@@ -1,72 +1,146 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
-    Box, Typography, Tooltip, IconButton, Card, CardContent, FormGroup, FormControlLabel,
-    Checkbox, Chip
-} from '@mui/material';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+  Box,
+  Typography,
+  Tooltip,
+  IconButton,
+  Card,
+  CardContent,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Chip,
+  ContainerTypeMap,
+} from "@mui/material";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import ItemCard from "./ItemCard";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
+import { v4 as uuidv4 } from "uuid";
+import dayjs, { Dayjs } from "dayjs";
 
-interface ListItem {
-    checked: boolean,
-    title: string,
-    due?: Date,
-    repeated: boolean,
-    subTasks?: {
-        checked: boolean,
-        title: string
-    }[]
+export interface TaskItem {
+  id: string;
+  checked: boolean;
+  title: string;
+  description?: string;
+  due?: Dayjs;
+  repeated: boolean;
+  subTasks?: {
+    checked: boolean;
+    title: string;
+  }[];
 }
 
 type CategoryProps = {
-    title: string,
-}
+  title: string;
+};
+
+// a little function to help us with reordering the result
+const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+const fakeData = [
+  {
+    id: uuidv4(),
+    checked: false,
+    title: "Daily Routine",
+    description: "Ladadida ladida",
+    repeated: true,
+    due: dayjs(),
+    subTasks: [
+      { checked: false, title: "Face wash" },
+      { checked: false, title: "Brush Teeth1" },
+      { checked: false, title: "Brush Teeth2" },
+      { checked: false, title: "Brush Teeth3" },
+      { checked: false, title: "Brush Teeth4" },
+    ],
+  },
+  {
+    id: uuidv4(),
+    checked: false,
+    title: "Facewash",
+    repeated: false,
+    due: dayjs("2023-01-25"),
+  },
+];
 
 export default function Category({ title }: CategoryProps) {
-    const [data, setData] = useState<[] | ListItem[]>([{
-        checked: false,
-        title: 'Daily Routine',
-        repeated: false
-    }, {
-        checked: false,
-        title: 'Daily Routine',
-        repeated: false
-    }]);
-    return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex' }}>
-                    <Typography variant='h6' marginRight={1}>
-                        {title}
-                    </Typography>
-                    <Typography variant='subtitle1' component='p' fontSize='medium' lineHeight={2.2} >
-                        {data.length}
-                    </Typography>
-                </Box>
-                <Tooltip title='More' placement='top'>
-                    <IconButton color='primary'>
-                        <MoreHorizIcon />
-                    </IconButton>
-                </Tooltip>
-            </Box>
-            {data ? (
-                <Box gap={0.5} display='flex' flexDirection='column'>
-                    {data.map((item: ListItem) => (
-                        <Card sx={{ backgroundColor: '#242424', border: '1px solid #505050' }}>
-                            <FormGroup sx={{ ml: 1 }}>
-                                <FormControlLabel control={<Checkbox checked={item.checked} sx={{ color: '#505050' }} />} label={item.title} disabled={item.checked} sx={{ color: 'rgba(255, 255, 255, 0.87)' }} />
-                            </FormGroup>
-                            {item.due && <Chip label={ } />}
-                        </Card>
-                    ))}
-                </Box>) : (
-                <></>
-            )}
-        </Box>
-    );
-}
+  const [data, setData] = useState<[] | TaskItem[]>(fakeData);
 
-function checkDate(value: Date): string {
-    const todaysDate = new Date().setHours(0, 0, 0, 0);
-    if (value.setHours(0, 0, 0, 0) == todaysDate) {
-        return 'Today';
-    } else if (todaysDate.setDate(todaysDate.getDate() + 1). == )
+  const onDragEnd = (r: DropResult) => {
+    if (!r.destination) {
+      return;
+    }
+    const dataItems = reorder(data, r.source.index, r.destination.index);
+    setData(dataItems);
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex" }}>
+          <Typography variant='h6' marginRight={1}>
+            {title}
+          </Typography>
+          <Typography
+            variant='subtitle1'
+            component='p'
+            fontSize='medium'
+            lineHeight={2.2}
+          >
+            {data.length}
+          </Typography>
+        </Box>
+        <Tooltip title='More' placement='top'>
+          <IconButton color='primary'>
+            <MoreHorizIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+      {data ? (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId={title}>
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef}>
+                {data.map((item: TaskItem, index: number) => (
+                  <Draggable index={index} key={item.id} draggableId={item.id}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={{
+                          userSelect: "none",
+                          ...provided.draggableProps.style,
+                        }}
+                      >
+                        <ItemCard
+                          taskData={data}
+                          setTaskData={setData}
+                          taskIndex={index}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (
+        <></>
+      )}
+    </Box>
+  );
 }
